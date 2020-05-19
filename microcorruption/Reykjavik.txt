@@ -1,0 +1,82 @@
+Schema general : <main> appel <enc> qui recupère le password tapé et 0x2400 qui est du code random ???
+
+buffer d'entrée de 43da à 43f8
+zone intéressante : de 2400 à 257f : donne le code assembleur suivant :
+
+0b12 0412 0441 2452 3150 e0ff 3b40 2045 073c 1b53 8f11 0f12 0312 b012 6424 2152 6f4b 4f93 f623 3012 0a00 0312 b012 6424 2152 3012 1f00 3f40 dcff 0f54 0f12 2312 b012 6424 3150 0600 b490 6916 dcff 0520 3012 7f00 b012 6424 2153 3150 2000 3441 3b41 3041 1e41 0200 0212 0f4e 8f10 024f 32d0 0080 b012 1000 3241 3041 d21a 189a 22dc 45b9 4279 2d55 858e a4a2 67d7 14ae a119 76f6 42cb 1c04 0efa a61b 74a7 416b d237 a253 22e4 66af c1a5 938b 8971 9b88 fa9b 6674 4e21 2a6b b143 9151 3dcc a6f5 daa7 db3f 8d3c 4d18 4736 dfa6 459a 2461 921d 3291 14e6 8157 b0fe 2ddd 400b 8688 6310 3ab3 612b 0bd9 483f 4e04 5870 4c38 c93c ff36 0e01 7f3e fa55 aeef 051c 242c 3c56 13af e57b 8abf 3040 c537 656e 8278 9af9 9d02 be83 b38c e181 3ad8 395a fce3 4f03 8ec9 9395 4a15 ce3b fd1e 7779 c9c3 5ff2 3dc7 5953 8826 d0b5 d9f8 639e e970 01cd 2119 ca6a d12c 97e2 7538 96c5 8f28 d682 1be5 ab20 7389 48aa 1fa3 472f a564 de2d b710 9081 5205 8d44 cff4 bc2e 577a d5f4 a851 c243 277d a4ca 1e6b 0000 000 
+
+qui donne le code suivant :
+2400	b12            push	r11					
+2402	0412           push	r4
+2402	0441           mov	sp, r4
+2404	2452           add	#0x4, r14  <-------------
+2406	3150 e0ff      add	#0xffe0, sp 		 	|
+240a	3b40 2045      mov	#0x4520, r11 			|
+240e	073c           jmp	$+0x10 					|
+2411	1b53           inc	r11 					|
+2413	8f11           sxt	r15                     |
+2415	0f12           push	r15 					|
+2417	0312           push	#0x0 					|
+2419	b012 6424      call	#0x2464 				|
+241c	2152           add	#0x4, sp 				|
+241e	6f4b           mov.b	@r11, r15			|
+2421	4f93           tst.b	r15					|
+2423	f623           jnz	$-0x12 ------------------
+2425	3012 0a00      push	#0xa
+2429	0312           push	#0x0
+242a	b012 6424      call	#0x2464
+
+242a	2152           add	#0x4, sp
+242a	3012 1f00      push	#0x1f
+242a	3f40 dcff      mov	#0xffdc, r15
+242a	0f54           add	r4, r15
+242a	0f12           push	r15
+242a	2312           push	#0x2
+242a	b012 6424      call	#0x2464
+242a	3150 0600      add	#0x6, sp
+242a	b490 6916 dcff cmp	#0x1669, -0x24(r4)
+242a	0520           jnz	$+0xc
+242a	3012 7f00      push	#0x7f
+242a	b012 6424      call	#0x2464
+242a	2153           incd	sp
+242a	3150 2000      add	#0x20, sp
+242a	3441           pop	r4
+242a	3b41           pop	r11
+242a	3041           ret
+
+2650	1e41 0200      mov	0x2(sp), r14
+2660	0212           push	sr
+2670	0f4e           mov	r14, r15
+2680	8f10           swpb	r15
+2690	024f           mov	r15, sr
+26a0	32d0 0080      bis	#0x8000, sr
+26b0	b012 1000      call	#0x10
+26c0	3241           pop	sr
+26d0	3041           ret
+
+d6ea 189a      call	&0x9a18
+
+2400:   0b12 0412 0441 2452 3150 e0ff 3b40 2045
+2410:   073c 1b53 8f11 0f12 0312 b012 6424 2152
+2420:   6f4b 4f93 f623 3012 0a00 0312 b012 6424
+2430:   2152 3012 1f00 3f40 dcff 0f54 0f12 2312
+2440:   b012 6424 3150 0600 b490 6916 dcff 0520
+2450:   3012 7f00 b012 6424 2153 3150 2000 3441
+2460:   3b41 3041 1e41 0200 0212 0f4e 8f10 024f
+2470:   32d0 0080 b012 1000 3241 3041 d21a 189a
+2480:   22dc 45b9 4279 2d55 858e a4a2 67d7 14ae
+2490:   a119 76f6 42cb 1c04 0efa a61b 74a7 416b
+24a0:   d237 a253 22e4 66af c1a5 938b 8971 9b88
+24b0:   fa9b 6674 4e21 2a6b b143 9151 3dcc a6f5
+24c0:   daa7 db3f 8d3c 4d18 4736 dfa6 459a 2461
+24d0:   921d 3291 14e6 8157 b0fe 2ddd 400b 8688
+24e0:   6310 3ab3 612b 0bd9 483f 4e04 5870 4c38
+24f0:   c93c ff36 0e01 7f3e fa55 aeef 051c 242c
+2500:   3c56 13af e57b 8abf 3040 c537 656e 8278
+2510:   9af9 9d02 be83 b38c e181 3ad8 395a fce3
+2520:   4f03 8ec9 9395 4a15 ce3b fd1e 7779 c9c3
+2530:   5ff2 3dc7 5953 8826 d0b5 d9f8 639e e970
+2540:   01cd 2119 ca6a d12c 97e2 7538 96c5 8f28
+2550:   d682 1be5 ab20 7389 48aa 1fa3 472f a564
+2560:   de2d b710 9081 5205 8d44 cff4 bc2e 577a
+2570:   d5f4 a851 c243 277d a4ca 1e6b 0000 0000

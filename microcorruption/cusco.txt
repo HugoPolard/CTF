@@ -1,0 +1,42 @@
+payload : 1111111111111111111111111111111111111111111111111111111111111111b0124644
+On essaye de réecrire la zone text avec un buffer overflow pour call unlock_door directement
+On met 0x43e8 dans r15, qu'on shift, en sachant que r15 ne doit pas être nul pour gagner
+
+Après analyse de INT 0x7D, le password à tester est en 0x43ee et le flag s'écrit en 43e8
+
+4452:  0412           push	r4
+4454:  0441           mov	sp, r4
+4456:  2453           incd	r4
+4458:  2183           decd	sp
+445a:  c443 fcff      mov.b	#0x0, -0x4(r4)			on met 0x43e8 à 0
+445e:  3e40 fcff      mov	#0xfffc, r14
+4462:  0e54           add	r4, r14
+4464:  0e12           push	r14
+4466:  0f12           push	r15
+4468:  3012 7d00      push	#0x7d
+446c:  b012 4245      call	#0x4542 <INT>
+4470:  5f44 fcff      mov.b	-0x4(r4), r15			on met 0x43e8 dans r15
+4474:  8f11           sxt	r15
+4476:  3152           add	#0x8, sp
+4478:  3441           pop	r4
+447a:  3041           ret
+
+Interface with the HSM-1. Set a flag in memory if the password passed in is
+correct.
+Takes two arguments. The first argument is the password to test, the
+second is the location of a flag to overwrite if the password is correct.
+
+METTRE DANS LE COURS :
+push param2
+push param1
+call func
+
+call <open_doors> : b0124644
+pour aller jusqu'en 4400 : 111111111111111111111111111111111111
+
+Dans <login> : avant de return, sp est en 43fe, zone corruptible
+BINGO! En mettant l'adresse de <unlock_doors> en 0x43fe, on ouvre la porte au retour de login, sp pointant vers cette adresse (qui est censée être une instruction du programme)
+
+A RETENIR : regarder ou est le stack pointer avant chaque return de fonction pour éventuellement diriger un retour
+
+payload : 111111111111111111111111111111114644
